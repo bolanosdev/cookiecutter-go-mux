@@ -4,11 +4,11 @@ This project is a [Cookiecutter](https://github.com/cookiecutter/cookiecutter) t
 
 ## Pending
 
-GH Actions
-PGX
-Telemetry
-Metrics
-Logging
+- GH Actions
+- PGX
+- Telemetry
+- Metrics
+- Logging
 
 ## Getting Started
 
@@ -45,8 +45,7 @@ $ namespace [default]:
 cd ~/path/to/example-service
 go mod tidy
 go mod vendor
-make build
-docker-compose up
+make run OR `make build && docker-compose up
 ```
 
 4.) The application and e2e test should exit successfully.
