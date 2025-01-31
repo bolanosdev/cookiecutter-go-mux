@@ -1,8 +1,14 @@
 # About
 
-This project is a [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template for quickly spinning up a
-Go microservice. It was designed to be used by the Application Services team to quickly spin up new microservices
-to prevent a lot of startup overhead.
+This project is a [Cookiecutter](https://github.com/cookiecutter/cookiecutter) template for quickly spinning up a Go microservice.
+
+## Pending
+
+GH Actions
+PGX
+Telemetry
+Metrics
+Logging
 
 ## Getting Started
 
@@ -18,15 +24,15 @@ to prevent a lot of startup overhead.
 1.) From the root of your project workspaces, run:
 
 ```
-cookiecutter git@github.com:bolanosdev/cookiecutter-go-mux.git
+cookiecutter git@github.com:bolanosdev/cookiecutter-go-gin.git
 ```
 
 2.) Follow the prompts - if you're just trying it out, just use the defaults. For more info, see Project Options below.
 
 ```
-$ groupname [company.com]
-$ projectname [example_service]:
-$ projectdescription [A brief overview of your service.]:
+$ group_name [company.com]
+$ project_descriptionname [example_service]:
+$ project_description [A brief overview of your service.]:
 $ go_module [company.com/example-service]:
 $ go_version [1.23]:
 $ docker_base_image [gcr.io/distroless/base]:
@@ -40,7 +46,7 @@ cd ~/path/to/example-service
 go mod tidy
 go mod vendor
 make build
-docker-compose up --force-recreate --build --abort-on-container-exit
+docker-compose up
 ```
 
 4.) The application and e2e test should exit successfully.
@@ -51,12 +57,7 @@ docker-compose up --force-recreate --build --abort-on-container-exit
 | ------------------- | ------------------------------------------------------------------------------------------------------------ |
 | project_name        | This is the name of your project. If you use multiple words, make it spinal-case. (e.g. example-service)     |
 | project_description | This is a description of your project - short and sweet works here.                                          |
-| project_slug        | This is the Bitbucket project slug where you plan to host the code - (e.g. as, plat, etc.). Keep lower case. |
 | go_module           | This is the go module. This will be auto-generated from your project name and project slug.                  |
 | go_version          | This is the version of Go we want to use. Defaults to 1.15.                                                  |
-| docker_base_image   | This is the base docker image to use when creating the project (excluding the hostname). Defaults to buster. |
-| namespace           | The Kubernetes namespace, for example u-&lt;CLOUDFLARE-USERNAME&gt; for your personal namespace.             |
-
-## Misc
-
-Remember to set `REMOTE_CHECK_MASTER_BRANCH: main` in the `env` field of the teamcity branch & production docker-build stages.
+| docker_image        | This is the base docker image to use when creating the project (excluding the hostname). Defaults to buster. |
+| namespace           | The Kubernetes namespace                                                                                     |
