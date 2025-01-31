@@ -1,0 +1,7 @@
+service_name: cookiecutter-service
+paseto:
+  token_symetric_key: 12345
+  token_duration: 24h
+observability:
+  jaeger: 
+    dial_hostname: "1.1.1.1:4137"

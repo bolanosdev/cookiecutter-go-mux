@@ -1,0 +1,10 @@
+{
+  "group_name": "bolanosdev",
+  "project_name": "example-service",
+  "project_description": "A brief overview of yours service.",
+
+  "go_version": "1.23",
+  "docker_image": "gcr.io/distroless/base",
+  "namespace": "default",
+  "_copy_without_render": ["bin/wait-for-it.sh"]
+}
