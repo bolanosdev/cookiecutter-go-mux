@@ -1,7 +1,7 @@
 {
   "group_name": "bolanosdev",
-  "project_name": "example-service",
-  "project_description": "A brief overview of yours service.",
+  "project_name": "cookiecutter",
+  "project_description": "A brief overview of your service.",
 
   "go_version": "1.23",
   "docker_image": "gcr.io/distroless/base",

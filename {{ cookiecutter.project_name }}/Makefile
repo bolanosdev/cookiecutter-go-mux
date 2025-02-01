@@ -1,17 +1,25 @@
 VERSION:=$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 DATE?=$(shell date -u '+%Y-%m-%d-%H%M')
 
-help:
-	@echo 'Available commands:'
-	@echo '* help            - Show this message'
-	@echo '* lint            - Lint code'
-	@echo '* test            - Run all tests'
-	@echo '* unit            - Run unit tests'
-	@echo '* integration     - Run integration tests'
-	@echo '* cover           - Coverage report'
-	@echo '* build           - Build binaries'
-	@echo '* run             - Start the main file'
-	@echo '* clean           - Clean built binaries'
+postgres:
+	docker run -d --rm --name postgres-cookie \
+  -p 5434:5432 \
+  -e POSTGRES_USER=cookie_user \
+  -e POSTGRES_PASSWORD=cookie_pwd \
+	-e POSTGRES_DB=cookie_db \
+  -d postgres
+
+migrate_up:
+	migrate -path db/migrations -database postgres://cookie_user:cookie_pwd@localhost:5434/cookie_db?sslmode=disable -verbose up
+	
+migrate_down:
+	migrate -path db/migrations -database postgres://cookie_user:cookie_pwd@localhost:5434/cookie_db?sslmode=disable -verbose down
+
+create_db:
+	docker exec -it postgres-cookie createdb --username=cookie_user --owner=cookie_user cookie_db
+
+drop_db:
+	docker exec -it postgres-cookie dropdb --username=cookie_user cookie_db
 
 build:
 		@mkdir -p dist
@@ -35,7 +43,7 @@ fmt:
 	go fmt ./...
 
 lint:
-		@golangci-lint run
+	@golangci-lint run
 
 test: unit integration
 

@@ -1,8 +1,7 @@
-package test
+package integration
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -12,12 +11,10 @@ import (
 
 func TestE2E(t *testing.T) {
 	assert := assert.New(t)
+	api_address := os.Getenv("API_ADDRESS")
 
-	endpoint := os.Getenv("API_ADDRESS")
-
-	t.Run("GET /pong", func(t *testing.T) {
-		log.Printf("endpoint %v", endpoint)
-		res, err := http.Get(fmt.Sprintf("%s/ping", endpoint))
+	t.Run("GET /health", func(t *testing.T) {
+		res, err := http.Get(fmt.Sprintf("%s/health", api_address))
 		assert.NoError(err)
 		assert.Equal(http.StatusOK, res.StatusCode)
 	})

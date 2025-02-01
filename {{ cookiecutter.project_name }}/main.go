@@ -1,17 +1,15 @@
 package main
 
 import (
-	"flag"
+	"context"
 	"log"
-	"os"
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd"
 )
 
 func main() {
-	flag.Parse()
-	app := cmd.MainApp{}
-	err := app.New().Run(os.Args)
+	ctx := context.Background()
+	err := cmd.New(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}

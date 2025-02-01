@@ -18,6 +18,8 @@ This project is a [Cookiecutter](https://github.com/cookiecutter/cookiecutter) t
 - Go
 - Docker
 - Golangci-lint
+- Go Migrate
+- SQLC
 
 ### Creating a new project
 

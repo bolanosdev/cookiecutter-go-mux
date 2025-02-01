@@ -8,6 +8,7 @@ import (
 
 type AppConfig struct {
 	SERVICE_NAME  string       `mapstructure:"service_name"`
+	DATABASE      DBConfig     `mapstructure:"db"`
 	PASETO        PasetoConfig `mapstructure:"paseto"`
 	OBSERVABILITY ObsConfig    `mapstructure:"observability"`
 }

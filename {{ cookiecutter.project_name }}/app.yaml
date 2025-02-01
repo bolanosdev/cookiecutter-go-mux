@@ -1,7 +1,16 @@
-service_name: cookiecutter-service
+service_name: {{ cookiecutter.project_name }}
 paseto:
   token_symetric_key: 12345
   token_duration: 24h
 observability:
   jaeger: 
     dial_hostname: "1.1.1.1:4137"
+db:
+  hostname: localhost
+  port: 5434
+  username: cookie_user
+  password: cookie_pwd
+  database: cookie_db
+  ssl: disable
+
+
