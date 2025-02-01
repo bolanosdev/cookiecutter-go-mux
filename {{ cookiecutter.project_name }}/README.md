@@ -64,3 +64,7 @@ For more information see [golang-migrate github](https://github.com/golang-migra
 
 4.) Run the App
 `make run` or `docker-compose up`
+
+5.) Hit the endpoints
+`curl localhost:9000/health`
+`curl localhost:9000/accounts`
