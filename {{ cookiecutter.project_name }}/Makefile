@@ -1,25 +1,44 @@
 VERSION:=$(shell git rev-list --count HEAD)-$(shell git rev-parse --short HEAD)
 DATE?=$(shell date -u '+%Y-%m-%d-%H%M')
 
-postgres:
-	docker run -d --rm --name postgres-cookie \
-  -p 5434:5432 \
-  -e POSTGRES_USER=cookie_user \
-  -e POSTGRES_PASSWORD=cookie_pwd \
-	-e POSTGRES_DB=cookie_db \
-  -d postgres
+POSTGRES_USER={{ cookiecutter.postgres_user }}
+POSTGRES_PASSWORD={{ cookiecutter.postgres_password }}
+POSTGRES_PORT={{ cookiecutter.postgres_port }}
+POSTGRES_HOSTNAME={{ cookiecutter.postgres_hostname }}
+POSTGRES_DB={{ cookiecutter.project_name }}_db
+POSTGRES_CONNECTION_STRING=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOSTNAME):$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
 
-migrate_up:
-	migrate -path db/migrations -database postgres://cookie_user:cookie_pwd@localhost:5434/cookie_db?sslmode=disable -verbose up
-	
-migrate_down:
-	migrate -path db/migrations -database postgres://cookie_user:cookie_pwd@localhost:5434/cookie_db?sslmode=disable -verbose down
+postgres:
+	docker run -d --rm --name postgres  \
+  -p $(POSTGRES_PORT):5432 \
+  -e POSTGRES_USER=$(POSTGRES_USER) \
+  -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) \
+	-d postgres:12-alpine
+
+jaeger: 
+	docker run -d --rm --name jaeger \
+		-p 5778:5778 \
+		-p 16686:16686 \
+		-p 4317:4317 \
+		-p 4318:4318 \
+		-p 14250:14250 \
+		-p 14268:14268 \
+		-p 9411:9411 \
+		jaegertracing/jaeger:2.0.0 \
+		--set receivers.otlp.protocols.http.endpoint=0.0.0.0:4318 \
+			--set receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317
 
 create_db:
-	docker exec -it postgres-cookie createdb --username=cookie_user --owner=cookie_user cookie_db
+	docker exec -it postgres createdb --username=$(POSTGRES_USER) --owner=$(POSTGRES_USER) $(POSTGRES_DB)
 
 drop_db:
-	docker exec -it postgres-cookie dropdb --username=cookie_user cookie_db
+	docker exec -it postgres dropdb --username=$(POSTGRES_USER) $(POSTGRES_DB)
+
+migrate_up:
+	migrate -path db/migrations -database $(POSTGRES_CONNECTION_STRING) -verbose up
+	
+migrate_down:
+	migrate -path db/migrations -database $(POSTGRES_CONNECTION_STRING) -verbose down
 
 build:
 		@mkdir -p dist
@@ -59,8 +78,9 @@ unit:
 
 integration:
 	@echo 'Running integration tests...'
-	go test -v -count=1 \
-		-tags=integration ./test/...
+	@mkdir -p .cover
+	go test -v -count=1 -tags=integration ./test/...
+
 
 cover:
 ifndef CI

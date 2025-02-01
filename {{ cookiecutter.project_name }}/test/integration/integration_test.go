@@ -11,7 +11,7 @@ import (
 
 func TestE2E(t *testing.T) {
 	assert := assert.New(t)
-	api_address := os.Getenv("API_ADDRESS")
+	api_address := os.Getenv("api_address")
 
 	t.Run("GET /health", func(t *testing.T) {
 		res, err := http.Get(fmt.Sprintf("%s/health", api_address))

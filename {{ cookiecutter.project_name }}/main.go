@@ -9,7 +9,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	err := cmd.New(ctx)
+	err := cmd.New(ctx).SetMiddleware().SetRouter().Start()
 	if err != nil {
 		log.Fatal(err)
 	}

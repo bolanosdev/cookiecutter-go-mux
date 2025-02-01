@@ -10,21 +10,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AccountApi struct {
+type RoleApi struct {
 	ac_svc services.AccountService
 	r_svc  services.RoleService
 	p_svc  services.PermissionService
 }
 
-func NewAccountApi(sf services.ServiceFactory) AccountApi {
-	return AccountApi{
+func NewRoleApi(sf services.ServiceFactory) RoleApi {
+	return RoleApi{
 		ac_svc: sf.Accounts,
 		r_svc:  sf.Roles,
 		p_svc:  sf.Permissions,
 	}
 }
 
-func (h AccountApi) GetAll(c *gin.Context) {
+func (h RoleApi) GetAll(c *gin.Context) {
 	ctx, span := utils.TracerWithGinContext(c, "api.GetAll")
 	accounts, account, err := h.ac_svc.GetAll(ctx)
 	if err != nil {

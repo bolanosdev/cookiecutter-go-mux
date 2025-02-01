@@ -1,7 +1,9 @@
 package cfg
 
 type ObsConfig struct {
-	JAEGER JaegerConfig `mapstructure:"jaeger"`
+	JAEGER        JaegerConfig `mapstructure:"jaeger"`
+	IGNORED_PATHS []string     `mapstructure:"ignored_paths"`
+	DEBUGGER_KEY  string       `mapstructure:"debugger_key"`
 }
 
 type JaegerConfig struct {
