@@ -1,56 +1,30 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/errors"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/services"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 type RoleApi struct {
-	ac_svc services.AccountService
-	r_svc  services.RoleService
-	p_svc  services.PermissionService
+	svc services.RoleService
 }
 
 func NewRoleApi(sf services.ServiceFactory) RoleApi {
 	return RoleApi{
-		ac_svc: sf.Accounts,
-		r_svc:  sf.Roles,
-		p_svc:  sf.Permissions,
+		svc: sf.Roles,
 	}
 }
 
-func (h RoleApi) GetAll(c *gin.Context) {
-	ctx, span := utils.TracerWithGinContext(c, "api.GetAll")
-	accounts, account, err := h.ac_svc.GetAll(ctx)
+func (h RoleApi) GetAll(w http.ResponseWriter, r *http.Request) {
+	roles, _, err := h.svc.GetAll(r.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
+		// c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
 		return
 	}
 
-	roles, role, err := h.r_svc.GetAll(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
-		return
-	}
+	w.Header().Set("Content-Type", "application/json")
 
-	permissions, permission, err := h.p_svc.GetAll(ctx)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
-		return
-	}
-
-	span.End()
-	c.JSON(http.StatusOK, gin.H{
-		"accounts":    accounts,
-		"account":     account,
-		"roles":       roles,
-		"role":        role,
-		"permissions": permissions,
-		"permission":  permission,
-	})
+	json.NewEncoder(w).Encode(roles)
 }

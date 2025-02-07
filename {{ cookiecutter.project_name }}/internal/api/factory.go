@@ -6,6 +6,7 @@ import (
 )
 
 type ApiFactory struct {
+	Data        DataApi
 	Accounts    AccountApi
 	Roles       RoleApi
 	Permissions PermissionApi
@@ -15,6 +16,7 @@ type ApiFactory struct {
 func NewApiFactory(store db.Store) ApiFactory {
 	sf := services.NewServiceFactory(store)
 	return ApiFactory{
+		Data:        NewDataApi(sf),
 		Accounts:    NewAccountApi(sf),
 		Roles:       NewRoleApi(sf),
 		Permissions: NewPermissionApi(sf),

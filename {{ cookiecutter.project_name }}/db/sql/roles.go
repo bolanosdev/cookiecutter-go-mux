@@ -10,7 +10,7 @@ import (
 )
 
 func (q *Queries) GetRoles(ctx context.Context) ([]models.Role, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetRoles")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetRoles")
 	d := []models.Role{}
 	query := `select * from roles;`
 	rows, err := q.db.Query(ctx, query)
@@ -28,7 +28,7 @@ func (q *Queries) GetRoles(ctx context.Context) ([]models.Role, error) {
 }
 
 func (q *Queries) GetRoleById(ctx context.Context) (models.Role, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetRoleById")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetRoleById")
 
 	d := models.Role{}
 	query := `select * from roles where id = 1;`

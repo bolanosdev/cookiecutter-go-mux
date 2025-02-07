@@ -3,26 +3,29 @@ package cmd
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/cfg"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/middleware"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/telemetry"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/api"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/utils"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
 )
 
 type MainApp struct {
-	r    *gin.Engine
-	conn *pgx.Conn
-	db   db.Store
-	cfg  cfg.AppConfig
+	ctx   context.Context
+	conn  *pgx.Conn
+	r     *mux.Router
+	store db.Store
+	cfg   cfg.AppConfig
 }
 
-func New(ctx context.Context) *MainApp {
+func New() *MainApp {
 	cfg := cfg.Load(".")
+	ctx := context.Background()
 	conn, err := db.OpenConnectionPool(ctx, cfg.DATABASE)
 	if err != nil {
 		log.Fatal(err)
@@ -34,35 +37,34 @@ func New(ctx context.Context) *MainApp {
 		log.Fatal(err)
 		return nil
 	}
-	r := gin.Default()
-	db := db.NewStore(conn)
+	store := db.NewStore(conn)
+	r := mux.NewRouter()
 
 	app := MainApp{
-		r:   r,
-		db:  db,
-		cfg: cfg,
+		ctx:   context.Background(),
+		r:     r,
+		store: store,
+		cfg:   cfg,
 	}
 	return &app
 }
 
 func (app *MainApp) SetRouter() *MainApp {
-	api := api.NewApiFactory(app.db)
-	app.r.GET("/health", api.Health.Get)
-	app.r.GET("/accounts", api.Accounts.GetAll)
-	app.r.GET("/roles", api.Roles.GetAll)
-	app.r.GET("/permissions", api.Permissions.GetAll)
+	api := api.NewApiFactory(app.store)
 
+	app.r.Handle("/data", utils.Instrument(api.Data.Get, "GET /data"))
+	app.r.Handle("/accounts", utils.Instrument(api.Accounts.GetAll, "GET /accounts"))
+	app.r.Handle("/roles", utils.Instrument(api.Roles.GetAll, "GET /roles"))
+	app.r.Handle("/permissions", utils.Instrument(api.Permissions.GetAll, "GET /permissions"))
+
+	http.Handle("/", app.r)
 	return app
 }
 
 func (app *MainApp) SetMiddleware() *MainApp {
-	middleware.CORS(app.r)
-	middleware.Metrics(app.r)
-
-	app.r.Use(middleware.Logger(app.cfg))
 	return app
 }
 
-func (app *MainApp) Start() error {
-	return app.r.Run("0.0.0.0:9000")
+func (app *MainApp) Start() {
+	log.Fatal(http.ListenAndServe("localhost:9000", nil))
 }

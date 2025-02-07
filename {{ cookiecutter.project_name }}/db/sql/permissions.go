@@ -10,7 +10,7 @@ import (
 )
 
 func (q *Queries) GetPermissions(ctx context.Context) ([]models.Permission, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetPermissions")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetPermissions")
 	d := []models.Permission{}
 	query := `select * from permissions;`
 	rows, err := q.db.Query(ctx, query)
@@ -28,7 +28,7 @@ func (q *Queries) GetPermissions(ctx context.Context) ([]models.Permission, erro
 }
 
 func (q *Queries) GetPermissionById(ctx context.Context) (models.Permission, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetPermissionById")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetPermissionById")
 
 	d := models.Permission{}
 	query := `select * from permissions where id = 1;`

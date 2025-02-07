@@ -10,7 +10,7 @@ import (
 )
 
 func (q *Queries) GetAccounts(ctx context.Context) ([]models.Account, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetAccounts")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetAccounts")
 	d := []models.Account{}
 	query := `select * from accounts;`
 	rows, err := q.db.Query(ctx, query)
@@ -28,7 +28,7 @@ func (q *Queries) GetAccounts(ctx context.Context) ([]models.Account, error) {
 }
 
 func (q *Queries) GetAccountById(ctx context.Context) (models.Account, error) {
-	ctx, span := utils.TracerWithContext(ctx, "GetAccountById")
+	ctx, span := utils.TracerWithContext(ctx, "db.GetAccountById")
 
 	d := models.Account{}
 	query := `select * from accounts where id = 1;`
