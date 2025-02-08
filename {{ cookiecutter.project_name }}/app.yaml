@@ -3,10 +3,13 @@ paseto:
   token_symetric_key: 12345
   token_duration: 24h
 observability:
+  debugger_key: '6548973'
   jaeger: 
     dial_hostname: localhost:4317
-    ignored_paths:
-      - "/metrics"
+  sensitive_paths:
+    - "/accounts"
+  ignored_paths:
+    - "/metrics"
 db:
   hostname: {{ cookiecutter.postgres_hostname }}
   port: {{ cookiecutter.postgres_port }}

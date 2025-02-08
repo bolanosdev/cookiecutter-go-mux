@@ -10,8 +10,6 @@ This project is a [Cookiecutter](https://github.com/cookiecutter/cookiecutter) t
 ## Pending
 
 - GH Actions
-- Metrics
-- Logging
 - app.yaml (multi env) + vault
 
 ## Getting Started
@@ -49,7 +47,6 @@ $ namespace [default]:
 3.1) Install Dependencies
 
 ```
-cd ~/path/to/example-service
 go mod tidy
 go mod vendor
 ```
@@ -63,11 +60,10 @@ make migrate_up -- run migrations from the db/migrations folder
 
 ```
 
-3.3) run project
+3.3) Run project
 
 ```
 make run OR `make build && docker-compose up
-
 ```
 
 4.) The application and e2e test should exit successfully.
@@ -95,7 +91,27 @@ Once you have the database setup the way you wanted with your migrations, go ahe
 
 We decided to write our DB models/operations instead of using a sql generator such as <a href="https://github.com/sqlc-dev/sqlc">sqlc</a>, but feel free to add it if you want, that is why we follow similar folder structure.
 
+## Logging
+
+You can use any logging library you want, we just configured a <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.project_name%20%7D%7D/cmd/middleware/logging.go" target="_blank">logging middleware</a> to write some statistics of each request http_logger: {timestamp, uri, status_code, request, trace_id, duration}.
+
+Notes:
+
+- The trace_id should match the parent jaeger trace_id
+- If you want to exclude routes you can add them to the app.yaml observability ignored_paths list.
+- If you want the request body to not be included on the request you can add it to the app.yaml observability.sensitive_paths list. (do this if you do not want your logs to include sensitive information)
+
+<p>
+  Example: <br/>
+<img src="public/logging_middleware.png" alt="logging middleware example" /></p>
+
 ## Telemetry
+
+### Prometheus
+
+The project comes with a /metrics endpoint supported thanks to <a href="https://github.com/labbsr0x/mux-monitor" target="blank">Mux Monitor</a>
+
+### Jaeger
 
 The project comes with telemetry enabled for internal use and across multiple services.
 as long as you set the observability.jaeger.dial_hostname to a running instance of jaeger.

@@ -18,6 +18,10 @@ func Filter[E any, S ~[]E](s S, ff func(E) bool) S {
 	return out
 }
 
+func Contains[E any, S ~[]E](s S, ff func(E) bool) bool {
+	return len(Filter(s, ff)) > 0
+}
+
 func Group[E any, S ~[]E](s S, kf func(E) string) map[string][]E {
 	grouped := make(map[string][]E)
 

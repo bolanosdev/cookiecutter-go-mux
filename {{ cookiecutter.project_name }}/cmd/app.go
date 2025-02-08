@@ -7,12 +7,16 @@ import (
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/cfg"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/telemetry"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/middleware"
+
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/api"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/utils"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5"
+  muxMonitor "github.com/labbsr0x/mux-monitor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type MainApp struct {
@@ -21,6 +25,7 @@ type MainApp struct {
 	r     *mux.Router
 	store db.Store
 	cfg   cfg.AppConfig
+	monitor *muxMonitor.Monitor
 }
 
 func New() *MainApp {
@@ -37,6 +42,12 @@ func New() *MainApp {
 		log.Fatal(err)
 		return nil
 	}
+
+  monitor, err := muxMonitor.New("v1.0.0", muxMonitor.DefaultErrorMessageKey, muxMonitor.DefaultBuckets)
+	if err != nil {
+		panic(err)
+	}
+
 	store := db.NewStore(conn)
 	r := mux.NewRouter()
 
@@ -45,13 +56,16 @@ func New() *MainApp {
 		r:     r,
 		store: store,
 		cfg:   cfg,
+		monitor: monitor,
 	}
+
 	return &app
 }
 
 func (app *MainApp) SetRouter() *MainApp {
 	api := api.NewApiFactory(app.store)
 
+	app.r.Handle("/metrics", promhttp.Handler())
 	app.r.Handle("/data", utils.Instrument(api.Data.Get, "GET /data"))
 	app.r.Handle("/accounts", utils.Instrument(api.Accounts.GetAll, "GET /accounts"))
 	app.r.Handle("/roles", utils.Instrument(api.Roles.GetAll, "GET /roles"))
@@ -62,6 +76,8 @@ func (app *MainApp) SetRouter() *MainApp {
 }
 
 func (app *MainApp) SetMiddleware() *MainApp {
+	app.r.Use(middleware.Logging)
+	app.r.Use(app.monitor.Prometheus)
 	return app
 }
 
