@@ -1,10 +1,13 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/api/response"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/services"
+
+	"github.com/gorilla/mux"
 )
 
 type RoleApi struct {
@@ -18,13 +21,23 @@ func NewRoleApi(sf services.ServiceFactory) RoleApi {
 }
 
 func (h RoleApi) GetAll(w http.ResponseWriter, r *http.Request) {
-	roles, _, err := h.svc.GetAll(r.Context())
+	roles, err := h.svc.GetAll(r.Context())
 	if err != nil {
-		// c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
+		response.Error(w, r, http.StatusBadRequest, err, "bad request")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	response.Success(w, r, http.StatusOK, roles)
+}
 
-	json.NewEncoder(w).Encode(roles)
+func (h RoleApi) GetByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+	role, err := h.svc.GetByID(r.Context(), id)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, err, "bad request")
+		return
+	}
+
+	response.Success(w, r, http.StatusOK, role)
 }

@@ -18,19 +18,26 @@ func NewPermissionService(store db.Store) PermissionService {
 	}
 }
 
-func (svc PermissionService) GetAll(c context.Context) ([]models.Permission, models.Permission, error) {
+func (svc PermissionService) GetAll(c context.Context) ([]models.Permission, error) {
 	ctx, span := utils.TracerWithContext(c, "svc.GetAll")
 
 	permissions, err := svc.store.GetPermissions(ctx)
 	if err != nil {
-		return nil, models.Permission{}, err
-	}
-
-	permission, err := svc.store.GetPermissionById(ctx)
-	if err != nil {
-		return nil, models.Permission{}, err
+		return nil, err
 	}
 
 	span.End()
-	return permissions, permission, nil
+	return permissions, nil
+}
+
+func (svc PermissionService) GetByID(c context.Context, id int) (*models.Permission, error) {
+	ctx, span := utils.TracerWithContext(c, "svc.GetByID")
+
+	permission, err := svc.store.GetPermissionById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	span.End()
+	return &permission, nil
 }

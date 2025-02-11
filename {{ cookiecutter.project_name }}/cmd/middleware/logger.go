@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"time"
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/cmd/cfg"
@@ -16,7 +15,6 @@ import (
 func Logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		config := cfg.Load(".")
-		rec := httptest.NewRecorder()
 
 		start_time := time.Now()
 		method := r.Method
@@ -25,8 +23,9 @@ func Logging(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 
-		status_code := rec.Result().StatusCode
+		status_code := w.Header().Get("x-status-code")
 		trace_id := w.Header().Get("x-trace-id")
+		message := w.Header().Get("x-error-message")
 		duration := time.Since(start_time)
 		is_ignored := is_ignored_req(r, config)
 
@@ -35,9 +34,10 @@ func Logging(next http.Handler) http.Handler {
 				Str("trace_id", trace_id).
 				Str("method", method).
 				Str("url", url).
-				Bytes("request", req_body).
-				Int("status_code", status_code).
 				Dur("duration", duration).
+				Bytes("request", req_body).
+				Str("status_code", status_code).
+				Str("message", message).
 				Msg("http_logger")
 		}
 	})

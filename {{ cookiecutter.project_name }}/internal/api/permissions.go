@@ -1,34 +1,43 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/api/response"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.project_name }}/internal/services"
+
+	"github.com/gorilla/mux"
 )
 
 type PermissionApi struct {
-	ac_svc services.AccountService
-	r_svc  services.RoleService
-	p_svc  services.PermissionService
+	svc services.PermissionService
 }
 
 func NewPermissionApi(sf services.ServiceFactory) PermissionApi {
 	return PermissionApi{
-		ac_svc: sf.Accounts,
-		r_svc:  sf.Roles,
-		p_svc:  sf.Permissions,
+		svc: sf.Permissions,
 	}
 }
 
 func (h PermissionApi) GetAll(w http.ResponseWriter, r *http.Request) {
-	permissions, _, err := h.p_svc.GetAll(r.Context())
+	permissions, err := h.svc.GetAll(r.Context())
 	if err != nil {
-		// c.JSON(http.StatusInternalServerError, errors.ErrorInternalServer)
+		response.Error(w, r, http.StatusBadRequest, err, "bad request")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	response.Success(w, r, http.StatusOK, permissions)
+}
 
-	json.NewEncoder(w).Encode(permissions)
+func (h PermissionApi) GetByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+	role, err := h.svc.GetByID(r.Context(), id)
+	if err != nil {
+		response.Error(w, r, http.StatusBadRequest, err, "bad request")
+		return
+	}
+
+	response.Success(w, r, http.StatusOK, role)
 }

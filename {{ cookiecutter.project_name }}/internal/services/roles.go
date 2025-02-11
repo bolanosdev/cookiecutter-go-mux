@@ -18,19 +18,26 @@ func NewRoleService(store db.Store) RoleService {
 	}
 }
 
-func (svc RoleService) GetAll(c context.Context) ([]models.Role, models.Role, error) {
+func (svc RoleService) GetAll(c context.Context) ([]models.Role, error) {
 	ctx, span := utils.TracerWithContext(c, "svc.GetAll")
 
 	roles, err := svc.store.GetRoles(ctx)
 	if err != nil {
-		return nil, models.Role{}, err
-	}
-
-	role, err := svc.store.GetRoleById(ctx)
-	if err != nil {
-		return nil, models.Role{}, err
+		return nil, err
 	}
 
 	span.End()
-	return roles, role, nil
+	return roles, nil
+}
+
+func (svc RoleService) GetByID(c context.Context, id int) (*models.Role, error) {
+	ctx, span := utils.TracerWithContext(c, "svc.GetByID")
+
+	role, err := svc.store.GetRoleById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	span.End()
+	return &role, nil
 }
