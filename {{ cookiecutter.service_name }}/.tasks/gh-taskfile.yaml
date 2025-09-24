@@ -1,0 +1,15 @@
+version: 3
+
+tasks:
+  build:
+    cmds:
+      - mkdir -p dist
+      - mkdir -p dist/linux-amd64/
+      - cp -r app.yaml dist/linux-amd64/app.yaml
+
+  test:
+    cmds:
+      - task clean
+      - task boot
+      - task test:cover
+      - task test:integration

@@ -1,0 +1,15 @@
+version: 3
+
+env:
+  ENVIRONMENT: prod
+
+tasks:
+  secrets:
+    cmds:
+      - doppler secrets substitute --use-env=only resources/app.yaml --output app.yaml
+
+  build:
+    cmds:
+      - task build
+      - task prod:secrets
+      - cp -r app.yaml dist/linux-amd64/app.yaml
