@@ -1,0 +1,32 @@
+version: 3
+
+env:
+  VERSION: $(git rev-parse --short HEAD)
+  DATE: $(date -u '+%Y-%m-%d-%H%M')
+
+includes:
+  gh: ./.tasks/gh-taskfile.yaml
+  dev: ./.tasks/dev-taskfile.yaml
+  prod: ./.tasks/prod-taskfile.yaml
+  test: ./.tasks/test-taskfile.yaml
+
+tasks:
+  lint: golangci-lint run
+
+  build:
+    cmds:
+      - mkdir -p dist
+      - "GOOS=linux GOARCH=amd64 go build \
+        -o dist/linux-amd64/cookiecutter \
+        ./main.go"
+  clean:
+    cmds:
+      - rm -rf dist
+      - rm -rf .cover
+
+  test:
+    cmds:
+      - task clean
+      - task dev:secrets
+      - task test:unit
+      - task test:integration

@@ -1,0 +1,21 @@
+version: 3
+
+tasks:
+  unit:
+    cmds:
+      - echo "running unit tests"
+      - mkdir -p .cover
+      - go run main.go boot
+      - .tasks/scripts/test.sh
+  #cover: go tool cover -html .cover/cover.out && task test:tree && open .cover/out.svg
+  cover:
+    cmds:
+      - echo "runnig unit tests with coverage"
+      - .tasks/scripts/coverage.sh
+  view:
+    cmds:
+      - echo "view unit tests with coverage"
+      - go tool cover -html .cover/cover.out
+      - go-cover-treemap -coverprofile .cover/cover.out > .cover/out.svg
+      - open .cover/out.svg
+  integration: go test -v -count=1  -tags=integration ./test/integration/...

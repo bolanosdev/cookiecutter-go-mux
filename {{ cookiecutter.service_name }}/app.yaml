@@ -1,0 +1,25 @@
+service:
+  name: {{ cookiecutter.service_name }} 
+  port: {{ cookiecutter.service_port }}
+  version: 0000000
+  mode: 1
+  environment: 1
+paseto:
+  token_symetric_key: 12345678901234567890123456789012
+  token_renew_duration: 30m
+  token_expire_duration: 24h
+observability:
+  debugger_key: 
+  jaeger:
+    dial_hostname: localhost:4317
+  sensitive_paths:
+    - "/accounts"
+  ignored_paths:
+    - "/metrics"
+db:
+  hostname: localhost
+  port: 5432
+  username: cookie_user
+  password: cookie_pwd
+  database: cookiecutter_dev_db
+  ssl: disable

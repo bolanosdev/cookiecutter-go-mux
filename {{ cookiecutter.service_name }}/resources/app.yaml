@@ -1,0 +1,24 @@
+service_name: cookiecutter
+run:
+  version: {{ .RUN_VERSION }}
+  mode: {{ .RUN_MODE }}
+  environment: {{ .RUN_ENV }}
+paseto:
+  token_symetric_key: {{ .PASETO_TOKEN_SYMETRIC_KEY }}
+  token_renew_duration: {{ .PASETO_TOKEN_RENEW_DURATION }}
+  token_expire_duration: {{ .PASETO_TOKEN_EXPIRE_DURATION }}
+observability:
+  debugger_key: {{ .OBSERVABILITY_DEBUGGER_KEY }}
+  jaeger:
+    dial_hostname: {{ .JAEGER_DIAL_HOSTNAME }}
+  sensitive_paths:
+    - "/accounts"
+  ignored_paths:
+    - "/metrics"
+db:
+  hostname: {{ .DB_HOSTNAME }}
+  port: {{ .DB_PORT }}
+  username: {{ .DB_USERNAME }}
+  password: {{ .DB_PASSWORD }}
+  database: {{ .DB_NAME }}
+  ssl: disable

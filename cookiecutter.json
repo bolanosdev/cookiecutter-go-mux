@@ -1,15 +1,10 @@
 {
   "group_name": "bolanosdev",
-  "project_name": "cookiecutter",
-  "project_description": "A brief overview of your service.",
+  "service_name": "cookiecutter",
+  "service_port": "8080",
+  "service_description": "A brief overview of your service.",
   "go_version": "1.23",
   "docker_image": "gcr.io/distroless/base",
 
-  "postgres_name": "postgres",
-  "postgres_port": "5434",
-  "postgres_user": "postgres_user",
-  "postgres_password": "postgres_pwd",
-  "postgres_hostname": "localhost",
-
-  "_copy_without_render": []
+  "_copy_without_render": [".tasks", "resources", "dockerfiles/grafana", "test/hurl/*.hurl"]
 }
