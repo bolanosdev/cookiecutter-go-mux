@@ -56,8 +56,10 @@ func (m *Monitor) Use(r *mux.Router) {
 	m.initMetrics()
 	collector := pgxpoolprometheus.NewCollector(m.pool, map[string]string{"db_name": "brawney_db"})
 	prometheus.MustRegister(collector)
-	r.Use(m.Interceptor)
-	r.Handle(m.metricPath, promhttp.Handler())
+	if r != nil {
+		r.Use(m.Interceptor)
+		r.Handle(m.metricPath, promhttp.Handler())
+	}
 }
 
 // initMetrics used to init gin metrics

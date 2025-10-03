@@ -12,7 +12,6 @@ import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/services"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/prometheus"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/authorization"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/middleware"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/telemetry"
@@ -88,8 +87,7 @@ func New() *MainApp {
 }
 
 func (app *MainApp) SetMiddleware() *MainApp {
-	m := prometheus.GetMonitor(app.pool)
-	m.Use(app.router)
+	app.router.Use(app.middleware.Prometheus(app.pool))
 	app.router.Use(app.middleware.Logging(app.logger))
 
 	return app
