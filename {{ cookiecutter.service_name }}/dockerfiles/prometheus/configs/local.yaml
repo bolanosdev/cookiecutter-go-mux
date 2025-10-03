@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+
+rule_files:
+
+scrape_configs:
+  - job_name: "{{cookiecutter.postgres_db}}"
+    static_configs:
+      - targets: ["postgres_exporter:9187"]
+
+  - job_name: "{{cookiecutter.service_name}}"
+    static_configs:
+      - targets: ["host.docker.internal:{{cookiecutter.service_port}}"]

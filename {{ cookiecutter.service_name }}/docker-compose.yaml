@@ -1,26 +1,22 @@
 services:
   postgres:
     image: postgres:latest
-    platform: linux/amd64
     environment:
-      - POSTGRES_USER=cookie_user
-      - POSTGRES_PASSWORD=cookie_pwd
-      - POSTGRES_DB=cookiecutter_dev_db
+      - POSTGRES_USER={{cookiecutter.postgres_user}}
+      - POSTGRES_PASSWORD={{cookiecutter.postgres_password}}
+      - POSTGRES_DB={{cookiecutter.postgres_db}}
     ports:
-      - "5432:5432"
+      - "{{cookiecutter.postgres_port}}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     command: postgres -c ssl=off
 
   postgres_exporter:
     image: quay.io/prometheuscommunity/postgres-exporter
-    platform: linux/amd64
     ports:
       - 9187:9187
     environment:
-      - DATA_SOURCE_URI=postgres:5432
-      - DATA_SOURCE_USER=cookie_user
-      - DATA_SOURCE_PASS=cookie_pwd
+      - DATA_SOURCE_NAME=postgresql://{{cookiecutter.postgres_user}}:{{cookiecutter.postgres_password}}@postgres:{{cookiecutter.postgres_port}}/{{cookiecutter.postgres_db}}?sslmode=disable
     depends_on:
       - postgres
 
@@ -35,12 +31,11 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    platform: linux/amd64
     ports:
       - "3000:3000"
     volumes:
-      - ./dockerfiles/grafana/files/dashboards:/var/lib/grafana/dashboards
-      - ./dockerfiles/grafana/files/provisioning:/etc/grafana/provisioning
+      # - ./dockerfiles/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./dockerfiles/grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
