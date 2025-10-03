@@ -44,6 +44,7 @@ require (
 
 require (
 	github.com/bits-and-blooms/bitset v1.21.0
+	github.com/bolanosdev/prometheus-mux-monitor v1.0.0
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect

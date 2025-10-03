@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/prometheus"
+	prometheus "github.com/bolanosdev/prometheus-mux-monitor"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
