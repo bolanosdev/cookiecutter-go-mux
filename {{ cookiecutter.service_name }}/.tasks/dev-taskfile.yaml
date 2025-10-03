@@ -2,17 +2,9 @@ version: 3
 
 env:
   ENVIRONMENT: dev
-  POSTGRES_USER: cookie_user
-  POSTGRES_PASSWORD: cookie_pwd
-  POSTGRES_PORT: 5432
-  POSTGRES_HOSTNAME: localhost
-  POSTGRES_DB: cookiecutter_dev_db
-  POSTGRES_SOURCE_URI: "{{.POSTGRES_HOSTNAME }}:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}"
-  POSTGRES_CONNECTION_STRING: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@{{.POSTGRES_HOSTNAME}}:{{.POSTGRES_PORT}}/{{.POSTGRES_DB}}?sslmode=disable"
+  POSTGRES_CONNECTION_STRING: "postgres://{{cookiecutter.postgres_user}}:{{cookiecutter.postgres_password}}@{{cookiecutter.postgres_hostname}}:{{cookiecutter.postgres_port}}/{{cookiecutter.postgres_db}}?sslmode=disable"
 
 tasks:
-  postgres: docker run --rm -p 5432:5432 -e POSTGRES_USER={{.POSTGRES_USER}} -e POSTGRES_PASSWORD={{.POSTGRES_PASSWORD}} -e POSTGRES_DB={{.POSTGRES_DB}} -d postgres
-  create_db: "createdb -h {{.POSTGRES_HOSTNAME}} -p {{.POSTGRES_PORT}} -U {{.POSTGRES_USER}} {{.POSTGRES_DB}}"
   secrets: doppler secrets substitute resources/app.yaml --output app.yaml
   migrate_up: "migrate -path internal/db/migrations -database $POSTGRES_CONNECTION_STRING -verbose up"
   migrate_down: "migrate -path internal/db/migrations -database $POSTGRES_CONNECTION_STRING -verbose down"

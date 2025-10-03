@@ -6,5 +6,11 @@
   "go_version": "1.23",
   "docker_image": "gcr.io/distroless/base",
 
-  "_copy_without_render": [".tasks", "resources", "dockerfiles/grafana", "test/hurl/*.hurl"]
+  "postgres_db": "cookiecutter_dev_db",
+  "postgres_port": "5432",
+  "postgres_user": "cookie_user",
+  "postgres_password": "cookie_pwd",
+  "postgres_hostname": "localhost",
+
+  "_copy_without_render": ["resources", "dockerfiles/grafana/*.json",  "test/hurl/*.hurl"]
 }
