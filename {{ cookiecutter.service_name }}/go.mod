@@ -1,9 +1,11 @@
 module {{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}
 
-go 1.23
+go 1.25.1
 
 require (
 	github.com/IBM/pgxpoolprometheus v1.1.1
+	github.com/bolanosdev/query-builder v0.1.0
+	github.com/bolanosdev/prometheus-mux-monitor v0.2.1
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/o1egl/paseto v1.0.0
@@ -29,27 +31,21 @@ require (
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
-	github.com/stretchr/objx v0.5.2 // indirect
 )
 
 require (
 	github.com/bits-and-blooms/bitset v1.21.0
-	github.com/bolanosdev/prometheus-mux-monitor v1.0.0
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.25.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

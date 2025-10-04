@@ -5,15 +5,21 @@ import (
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/models"
 
+	qb "github.com/bolanosdev/query-builder"
 	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 func (q *Queries) GetPermissions(ctx context.Context) ([]models.Permission, error) {
+	query := `select * from permissions`
 	ctx, span := q.tracer.Trace(ctx, "sql.GetPermissions")
 	defer span.End()
 
+	span.SetAttributes(
+		attribute.String("query", query),
+	)
+
 	d := []models.Permission{}
-	query := `select * from permissions;`
 	rows, err := q.db.Query(ctx, query)
 	if err != nil {
 		return d, err
@@ -27,21 +33,28 @@ func (q *Queries) GetPermissions(ctx context.Context) ([]models.Permission, erro
 	return accounts, nil
 }
 
-func (q *Queries) GetPermissionById(ctx context.Context, id int) (models.Permission, error) {
-	ctx, span := q.tracer.Trace(ctx, "sql.GetPermissionById")
+func (q *Queries) GetPermission(ctx context.Context, conditions ...qb.QueryCondition) (models.Permission, error) {
+	ctx, span := q.tracer.Trace(ctx, "sql.GetPermission")
 	defer span.End()
 
+	builder := qb.NewQueryBuilder("select * from permissions").Where(conditions...)
+	query := builder.Apply()
+	values := builder.GetValues()
+
+	span.SetAttributes(
+		attribute.String("query", query),
+	)
+
 	d := models.Permission{}
-	query := `select * from permissions where id = $1;`
-	rows, err := q.db.Query(ctx, query, id)
+	rows, err := q.db.Query(ctx, query, values...)
 	if err != nil {
 		return d, err
 	}
 
-	account, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[models.Permission])
+	permission, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[models.Permission])
 	if err != nil {
 		return d, err
 	}
 
-	return account, nil
+	return permission, nil
 }

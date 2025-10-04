@@ -8,6 +8,8 @@ import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/models"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
+
+	qb "github.com/bolanosdev/query-builder"
 )
 
 type RoleService struct {
@@ -47,7 +49,7 @@ func (svc RoleService) GetByID(c context.Context, id int) (*models.Role, error) 
 	ctx, span := svc.tracer.Trace(c, "svc.GetByID")
 	defer span.End()
 
-	role, err := svc.store.GetRoleById(ctx, id)
+	role, err := svc.store.GetRole(ctx, qb.ByIntColumn("r.id", id))
 	if err != nil {
 		return nil, err
 	}

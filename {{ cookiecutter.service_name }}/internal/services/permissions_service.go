@@ -8,6 +8,8 @@ import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/models"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
+
+	qb "github.com/bolanosdev/query-builder"
 )
 
 type PermissionService struct {
@@ -47,7 +49,7 @@ func (svc PermissionService) GetByID(c context.Context, id int) (*models.Permiss
 	ctx, span := svc.tracer.Trace(c, "svc.GetByID")
 	defer span.End()
 
-	permission, err := svc.store.GetPermissionById(ctx, id)
+	permission, err := svc.store.GetPermission(ctx, qb.ByIntColumn("id", id))
 	if err != nil {
 		return nil, err
 	}

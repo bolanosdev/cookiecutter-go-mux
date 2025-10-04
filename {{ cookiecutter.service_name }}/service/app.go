@@ -87,7 +87,7 @@ func New() *MainApp {
 }
 
 func (app *MainApp) SetMiddleware() *MainApp {
-	app.router.Use(app.middleware.Prometheus(app.pool))
+	app.router.Use(app.middleware.Prometheus())
 	app.router.Use(app.middleware.Logging(app.logger))
 
 	return app

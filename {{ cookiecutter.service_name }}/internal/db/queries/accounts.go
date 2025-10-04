@@ -1,7 +1,5 @@
 package queries
 
-import "fmt"
-
 var GET_ACCOUNTS_QUERY = `
   select 
     a.id, 
@@ -15,10 +13,8 @@ var GET_ACCOUNTS_QUERY = `
   from accounts a
   join roles r on r.id = a.role_id`
 
-var GET_ACCOUNTS_BY_ID_QUERY = fmt.Sprintf(`
-  %s 
-  where a.id = $1`, GET_ACCOUNTS_QUERY)
-
-var GET_ACCOUNTS_BY_EMAIL_QUERY = fmt.Sprintf(`
-  %s 
-  where a.email = $1`, GET_ACCOUNTS_QUERY)
+var CREATE_ACCOUNT_QUERY = `
+	insert into accounts (email, password) 
+	values (@email, @password) 
+	returning *;
+`
