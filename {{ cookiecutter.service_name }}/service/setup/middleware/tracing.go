@@ -7,13 +7,18 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-func (m *Middleware) Tracing(h func(w http.ResponseWriter, r *http.Request), operation_name string) http.Handler {
-	tp := otel.GetTracerProvider()
-	handler := otelhttp.NewHandler(
-		http.HandlerFunc(h),
-		operation_name,
-		otelhttp.WithTracerProvider(tp),
-	)
+func (m *Middleware) Tracing() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			tp := otel.GetTracerProvider()
 
-	return handler
+			handler := otelhttp.NewHandler(
+				next,
+				"http_tracer",
+				otelhttp.WithTracerProvider(tp),
+			)
+
+			handler.ServeHTTP(w, r)
+		})
+	}
 }

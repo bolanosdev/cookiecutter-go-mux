@@ -6,6 +6,7 @@ import (
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/services"
 
+	"github.com/bolanosdev/go-snacks/observability/logging"
 	"github.com/gorilla/mux"
 )
 
@@ -20,9 +21,13 @@ func NewAccountApi(sf services.ServiceFactory) AccountApi {
 }
 
 func (h AccountApi) GetAll(w http.ResponseWriter, r *http.Request) {
-	accounts, err := h.svc.GetAll(r.Context())
+	ctx := r.Context()
+	logger := ctx.Value("logger").(*logging.ContextLogger)
+
+	accounts, err := h.svc.GetAll(ctx)
 	if err != nil {
-		Error(w, r, http.StatusBadRequest, err, "bad request")
+		logger.Error().Err(err).Msg("failed to get all accounts")
+		Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
@@ -32,13 +37,14 @@ func (h AccountApi) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h AccountApi) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
-	account, err := h.svc.GetByID(r.Context(), id)
+	ctx := r.Context()
+	logger := ctx.Value("logger").(*logging.ContextLogger)
+
+	account, err := h.svc.GetByID(ctx, id)
 	if err != nil {
-		if err.Error() == "no records found" {
-			Error(w, r, http.StatusNoContent, err, "")
-		} else {
-			Error(w, r, http.StatusBadRequest, err, "")
-		}
+		logger.Error().Err(err).Msg("failed to get account by id")
+		Error(w, r, http.StatusBadRequest, err)
+
 		return
 	}
 

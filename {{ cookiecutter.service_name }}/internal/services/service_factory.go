@@ -7,7 +7,8 @@ import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/pgx"
 
 	"go.opentelemetry.io/otel"
 )
@@ -23,7 +24,7 @@ func NewServiceFactory(
 	cfg config.AppConfig,
 	db sql.PgxPoolConn,
 	store db.Store,
-	tracer utils.TracerInterface,
+	tracer obs.TracerInterface,
 	cache *cache.InMemoryCacheStore,
 ) ServiceFactory {
 	return ServiceFactory{
@@ -38,10 +39,10 @@ func GetRealServiceFactory(ctx context.Context) ServiceFactory {
 	cache := cache.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
 	tp := otel.GetTracerProvider()
-	tracer := utils.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(tp, cfg)
 
-	pgx_config, _ := utils.CreatePGXConfig(cfg.DATABASE)
-	conn, _, _ := utils.OpenConnectionPool(ctx, pgx_config)
+	pgx_config, _ := pgx.CreatePGXConfig(cfg.DATABASE)
+	conn, _, _ := pgx.OpenConnectionPool(ctx, pgx_config)
 	store := db.NewStore(tracer, conn, cache)
 	sf := NewServiceFactory(cfg, conn, store, tracer, cache)
 
@@ -52,7 +53,7 @@ func GetTestServiceFactory(mocker sql.PGXMocker) ServiceFactory {
 	cache := cache.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
 	tp := otel.GetTracerProvider()
-	tracer := utils.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(tp, cfg)
 
 	store := db.NewStore(tracer, mocker.Mock, cache)
 	sf := NewServiceFactory(cfg, mocker.Mock, store, tracer, cache)

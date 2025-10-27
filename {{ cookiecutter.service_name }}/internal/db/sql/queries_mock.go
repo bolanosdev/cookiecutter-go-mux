@@ -5,7 +5,7 @@ import (
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
 
 	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel"
@@ -62,7 +62,7 @@ func GetPGXMocks() (pgxmock.PgxConnIface, *MockPgxPoolConn, *Queries) {
 	store := cache.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
 	tp := otel.GetTracerProvider()
-	tracer := utils.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(tp, cfg)
 	querier := NewQueries(tracer, mock, store)
 
 	return conn, mock, querier

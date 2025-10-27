@@ -18,8 +18,8 @@ observability:
     - "/metrics"
 db:
   hostname: localhost
-  port: 5432
-  username: cookie_user
-  password: cookie_pwd
-  database: cookiecutter_dev_db
+  port: {{ cookiecutter.db_port }}
+  username: {{ cookiecutter.db_user }}
+  password: {{ cookiecutter.db_password }}
+  database: {{ cookiecutter.db_name }}
   ssl: disable

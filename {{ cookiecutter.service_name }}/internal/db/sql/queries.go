@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,13 +19,13 @@ type PgxPoolConn interface {
 }
 
 type Queries struct {
-	tracer utils.TracerInterface
+	tracer obs.TracerInterface
 	db     PgxPoolConn
 	cache  *cache.InMemoryCacheStore
 }
 
 func NewQueries(
-	tracer utils.TracerInterface,
+	tracer obs.TracerInterface,
 	conn PgxPoolConn,
 	cache *cache.InMemoryCacheStore,
 ) *Queries {

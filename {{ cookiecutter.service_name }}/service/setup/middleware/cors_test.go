@@ -17,7 +17,7 @@ func TestCORS(t *testing.T) {
 	handler := CORS(router)
 
 	req := httptest.NewRequest(http.MethodGet, "/test", nil)
-	req.Header.Set("Origin", "http://example.com") // CORS checks require this
+	req.Header.Set("Origin", "*")
 	rr := httptest.NewRecorder()
 
 	handler.ServeHTTP(rr, req)

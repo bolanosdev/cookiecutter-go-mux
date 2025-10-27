@@ -1,4 +1,4 @@
-package utils
+package password
 
 import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/consts/errors"

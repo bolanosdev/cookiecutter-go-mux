@@ -2,39 +2,31 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
-	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/encoder"
 	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/service/entities/response"
-
-	"go.opentelemetry.io/otel/trace"
 )
 
-func Error(w http.ResponseWriter, r *http.Request, status int, err error, message string) {
-	trace_id := trace.SpanContextFromContext(r.Context()).TraceID()
-	res := response.V1ErrorResponse{
-		Code:    status,
-		Message: message,
+func Error(w http.ResponseWriter, r *http.Request, status int, external_err error) {
+	ext_err_message := ""
+
+	if external_err != nil {
+		ext_err_message = external_err.Error()
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("x-server-readonly", "true")
-	w.Header().Set("x-status-code", strconv.Itoa(status))
-	w.Header().Set("x-trace-id", trace_id.String())
-	w.Header().Set("x-error-message", err.Error())
+	response := response.V1ErrorResponse{
+		Code:    status,
+		Message: ext_err_message,
+	}
 
-	utils.Encode(w, status, res)
+	encoder.Encode(w, status, response)
 }
 
 func Success(w http.ResponseWriter, r *http.Request, status int, result any) {
-	res := response.V1SuccessResponse{
+	response := response.V1SuccessResponse{
 		Success: true,
 		Result:  result,
 	}
-	trace_id := trace.SpanContextFromContext(r.Context()).TraceID()
 
-	w.Header().Set("x-server-readonly", "true")
-	w.Header().Set("x-status-code", strconv.Itoa(status))
-	w.Header().Set("x-trace-id", trace_id.String())
-	utils.Encode(w, status, res)
+	encoder.Encode(w, status, response)
 }

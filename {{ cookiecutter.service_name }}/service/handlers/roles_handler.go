@@ -6,6 +6,7 @@ import (
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/services"
 
+	"github.com/bolanosdev/go-snacks/observability/logging"
 	"github.com/gorilla/mux"
 )
 
@@ -20,9 +21,13 @@ func NewRoleApi(sf services.ServiceFactory) RoleApi {
 }
 
 func (h RoleApi) GetAll(w http.ResponseWriter, r *http.Request) {
-	roles, err := h.svc.GetAll(r.Context())
+	ctx := r.Context()
+	logger := ctx.Value("logger").(*logging.ContextLogger)
+
+	roles, err := h.svc.GetAll(ctx)
 	if err != nil {
-		Error(w, r, http.StatusBadRequest, err, "bad request")
+		logger.Error().Err(err).Msg("failed to get all roles")
+		Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 
@@ -30,11 +35,16 @@ func (h RoleApi) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h RoleApi) GetByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := ctx.Value("logger").(*logging.ContextLogger)
+
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
-	role, err := h.svc.GetByID(r.Context(), id)
+	role, err := h.svc.GetByID(ctx, id)
+
 	if err != nil {
-		Error(w, r, http.StatusBadRequest, err, "bad request")
+		logger.Error().Err(err).Msg("failed to get role by id")
+		Error(w, r, http.StatusBadRequest, err)
 		return
 	}
 

@@ -6,6 +6,6 @@ type ServiceConfig struct {
 	NAME    string               `mapstructure:"name"`
 	PORT    string               `mapstructure:"port"`
 	VERSION string               `mapstructure:"version"`
-	mode    enums.RunMode        `mapstructure:"mode"`
-	env     enums.RunEnvironment `mapstructure:"environment"`
+	MODE    enums.RunMode        `mapstructure:"mode"`
+	ENV     enums.RunEnvironment `mapstructure:"environment"`
 }
