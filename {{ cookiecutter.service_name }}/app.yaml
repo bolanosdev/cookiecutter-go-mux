@@ -17,9 +17,9 @@ observability:
   ignored_paths:
     - "/metrics"
 db:
-  hostname: localhost
-  port: {{ cookiecutter.db_port }}
-  username: {{ cookiecutter.db_user }}
-  password: {{ cookiecutter.db_password }}
-  database: {{ cookiecutter.db_name }}
+  hostname: {{ cookiecutter.postgres_hostname }}
+  port: {{ cookiecutter.postgres_port }}
+  username: {{ cookiecutter.postgres_user }}
+  password: {{ cookiecutter.postgres_password }}
+  database: {{ cookiecutter.postgres_db }}
   ssl: disable

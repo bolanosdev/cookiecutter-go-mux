@@ -1,15 +1,14 @@
 package password
 
 import (
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/consts/errors"
-
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func HashPassword(password string) (string, error) {
 	hashed_password, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", errors.New("utils.HashPassword", err)
+		return "", errors.Wrap(err, "utils.HashPassword")
 	}
 
 	return string(hashed_password), nil
@@ -19,7 +18,7 @@ func HashPassword(password string) (string, error) {
 func CheckPassword(password string, hashedPassword string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	if err != nil {
-		return errors.New("utils.CheckPassword", err)
+		return errors.Wrap(err, "utils.CheckPassword")
 	}
 	return nil
 }

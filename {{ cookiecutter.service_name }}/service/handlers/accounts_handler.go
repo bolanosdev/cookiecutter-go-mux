@@ -4,49 +4,43 @@ import (
 	"net/http"
 	"strconv"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/services"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/services"
 
-	"github.com/bolanosdev/go-snacks/observability/logging"
 	"github.com/gorilla/mux"
 )
 
 type AccountApi struct {
+	BaseHandler
 	svc services.AccountService
 }
 
 func NewAccountApi(sf services.ServiceFactory) AccountApi {
 	return AccountApi{
-		svc: sf.Accounts,
+		BaseHandler: NewBaseHandler(),
+		svc:         sf.Accounts,
 	}
 }
 
 func (h AccountApi) GetAll(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := ctx.Value("logger").(*logging.ContextLogger)
 
-	accounts, err := h.svc.GetAll(ctx)
+	accounts, err := h.svc.GetAll(r.Context())
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to get all accounts")
-		Error(w, r, http.StatusBadRequest, err)
+		h.Error(w, r, err)
 		return
 	}
 
-	Success(w, r, http.StatusOK, accounts)
+	h.Success(w, r, accounts)
 }
 
 func (h AccountApi) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
-	ctx := r.Context()
-	logger := ctx.Value("logger").(*logging.ContextLogger)
 
-	account, err := h.svc.GetByID(ctx, id)
+	account, err := h.svc.GetByID(r.Context(), id)
 	if err != nil {
-		logger.Error().Err(err).Msg("failed to get account by id")
-		Error(w, r, http.StatusBadRequest, err)
-
+		h.Error(w, r, err)
 		return
 	}
 
-	Success(w, r, http.StatusOK, account)
+	h.Success(w, r, account)
 }

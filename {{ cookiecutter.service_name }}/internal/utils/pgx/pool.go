@@ -24,8 +24,13 @@ func CreatePGXConfig(db_cfg config.DBConfig) (*pgxpool.Config, error) {
 	return cfg, nil
 }
 
-func OpenConnectionPool(ctx context.Context, cfg *pgxpool.Config) (*pgxpool.Conn, *pgxpool.Pool, error) {
-	pool, err := pgxpool.NewWithConfig(ctx, cfg)
+func OpenConnectionPool(ctx context.Context, cfg config.DBConfig) (*pgxpool.Conn, *pgxpool.Pool, error) {
+	pgx_config, err := CreatePGXConfig(cfg)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pool, err := pgxpool.NewWithConfig(ctx, pgx_config)
 	if err != nil {
 		// log.Fatalf("Error while creating pool to the database!! %v", err)
 		return nil, nil, err

@@ -3,14 +3,13 @@ package services
 import (
 	"context"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/pgx"
 
-	"go.opentelemetry.io/otel"
+	"github.com/bolanosdev/go-snacks/storage"
 )
 
 type ServiceFactory struct {
@@ -25,7 +24,7 @@ func NewServiceFactory(
 	db sql.PgxPoolConn,
 	store db.Store,
 	tracer obs.TracerInterface,
-	cache *cache.InMemoryCacheStore,
+	cache *storage.InMemoryCacheStore,
 ) ServiceFactory {
 	return ServiceFactory{
 		Cfg:         cfg,
@@ -36,13 +35,11 @@ func NewServiceFactory(
 }
 
 func GetRealServiceFactory(ctx context.Context) ServiceFactory {
-	cache := cache.NewCacheStore()
+	cache := storage.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
-	tp := otel.GetTracerProvider()
-	tracer := obs.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(ctx, cfg.SERVICE.NAME, cfg.OBSERVABILITY)
 
-	pgx_config, _ := pgx.CreatePGXConfig(cfg.DATABASE)
-	conn, _, _ := pgx.OpenConnectionPool(ctx, pgx_config)
+	conn, _, _ := pgx.OpenConnectionPool(ctx, cfg.DATABASE)
 	store := db.NewStore(tracer, conn, cache)
 	sf := NewServiceFactory(cfg, conn, store, tracer, cache)
 
@@ -50,10 +47,9 @@ func GetRealServiceFactory(ctx context.Context) ServiceFactory {
 }
 
 func GetTestServiceFactory(mocker sql.PGXMocker) ServiceFactory {
-	cache := cache.NewCacheStore()
+	cache := storage.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
-	tp := otel.GetTracerProvider()
-	tracer := obs.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(mocker.Ctx, cfg.SERVICE.NAME, cfg.OBSERVABILITY)
 
 	store := db.NewStore(tracer, mocker.Mock, cache)
 	sf := NewServiceFactory(cfg, mocker.Mock, store, tracer, cache)

@@ -1,6 +1,7 @@
 package config
 
 type ObsConfig struct {
+	SENTRY_DSN      string       `mapstructure:"sentry_dsn"`
 	JAEGER          JaegerConfig `mapstructure:"jaeger"`
 	SENSITIVE_PATHS []string     `mapstructure:"sensitive_paths"`
 	IGNORED_PATHS   []string     `mapstructure:"ignored_paths"`

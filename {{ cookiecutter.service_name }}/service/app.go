@@ -6,21 +6,19 @@ import (
 	"log"
 	"net/http"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/services"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/pgx"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/authorization"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/middleware"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/service/setup/telemetry"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/config"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/db"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/services"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/jwt"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/obs"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/pgx"
+	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/service/middleware"
 
 	"github.com/bolanosdev/go-snacks/automapper"
+	"github.com/bolanosdev/go-snacks/storage"
 
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go.opentelemetry.io/otel"
 )
 
 type MainApp struct {
@@ -29,7 +27,8 @@ type MainApp struct {
 	store      db.Store
 	sf         services.ServiceFactory
 	cfg        config.AppConfig
-	paseto     authorization.Maker
+	paseto     jwt.Maker
+	sentry     *obs.SentryObs
 	middleware middleware.Middleware
 	mapper     *automapper.AutoMapper
 }
@@ -38,60 +37,57 @@ func New() *MainApp {
 	cfg := config.NewConfigMgr(".").Load()
 	ctx := context.Background()
 
-	paseto, err := authorization.NewPasetoMaker(cfg.PASETO)
-	if err != nil {
-		log.Fatal(err)
-		return nil
-	}
-
-	pgx_config, err := pgx.CreatePGXConfig(cfg.DATABASE)
-	if err != nil {
-		log.Fatal(err)
-		return nil
-	}
-	conn, pool, err := pgx.OpenConnectionPool(ctx, pgx_config)
-	if err != nil {
-		log.Fatal(err)
-		return nil
-	}
-
-	err = telemetry.Initialize(ctx, cfg)
-	if err != nil {
-		log.Fatal(err)
-		return nil
-	}
-
-	cache := cache.GetCacheStore()
-	tp := otel.GetTracerProvider()
-	tracer := obs.NewTracer(tp, cfg)
-	store := db.NewStore(tracer, conn, cache)
-
 	autoMapper, err := automapper.New().Configure(ApiMappers)
 	if err != nil {
 		log.Fatal(err)
 		return nil
 	}
 
+	paseto, err := jwt.NewPasetoMaker(cfg.PASETO)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	sentry, err := obs.NewSentryObs(cfg.OBSERVABILITY)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	tracer, err := obs.NewTracer(ctx, cfg.SERVICE.NAME, cfg.OBSERVABILITY).Initialize()
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+
+	cache := storage.GetCacheStore()
+	conn, pool, err := pgx.OpenConnectionPool(ctx, cfg.DATABASE)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	store := db.NewStore(tracer, conn, cache)
+
 	sf := services.NewServiceFactory(cfg, conn, store, tracer, cache)
 	r := mux.NewRouter()
 
-	middleware := middleware.NewMiddleware(cfg, paseto)
-
 	app := MainApp{
-		router:     r,
-		pool:       pool,
-		store:      store,
-		sf:         sf,
-		cfg:        cfg,
-		paseto:     paseto,
-		middleware: middleware,
-		mapper:     autoMapper,
+		router: r,
+		pool:   pool,
+		store:  store,
+		sf:     sf,
+		cfg:    cfg,
+		paseto: paseto,
+		sentry: sentry,
+		mapper: autoMapper,
 	}
 
 	return &app
 }
 
 func (app *MainApp) SetMiddleware() *MainApp {
+	app.middleware = middleware.NewMiddleware(app.cfg, app.paseto)
 	app.router.Use(app.middleware.Prometheus(app.pool))
 	app.router.Use(app.middleware.Tracing())
 	app.router.Use(app.middleware.Logging())

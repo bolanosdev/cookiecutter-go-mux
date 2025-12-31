@@ -1,9 +1,10 @@
 package db
 
 import (
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
+
+	"github.com/bolanosdev/go-snacks/storage"
 )
 
 type (
@@ -17,7 +18,7 @@ type (
 func NewStore(
 	tracer obs.TracerInterface,
 	conn sql.PgxPoolConn,
-	cache *cache.InMemoryCacheStore,
+	cache *storage.InMemoryCacheStore,
 ) Store {
 	return Store{
 		db:      conn,

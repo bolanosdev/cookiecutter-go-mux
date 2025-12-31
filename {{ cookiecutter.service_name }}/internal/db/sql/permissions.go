@@ -4,59 +4,46 @@ import (
 	"context"
 
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/models"
+	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/queries"
 
-	"github.com/bolanosdev/go-snacks/observability/logging"
 	qb "github.com/bolanosdev/query-builder"
 	"github.com/jackc/pgx/v5"
-	"go.opentelemetry.io/otel/attribute"
 )
 
-func (q *Queries) GetPermissions(ctx context.Context) ([]models.Permission, error) {
-	query := `select * from permissions`
-	ctx, span := q.tracer.Trace(ctx, "sql.GetPermissions")
-	logger := ctx.Value("logger").(*logging.ContextLogger)
-	defer span.End()
+func (q *Queries) GetPermissions(ctx context.Context) ([]*models.Permission, error) {
+	query := queries.GET_PERMISSIONS_QUERY
+	ctx = q.tracer.TraceDB(ctx, query, nil)
 
-	span.SetAttributes(attribute.String("query", query))
-
-	d := []models.Permission{}
 	rows, err := q.db.Query(ctx, query)
 	if err != nil {
-		logger.Error().Err(err).Msg("sql.GetPermissions")
-		return d, err
+		return nil, NewQueryError(err, "sql.query.Permissions", nil)
 	}
 
-	accounts, err := pgx.CollectRows(rows, pgx.RowToStructByName[models.Permission])
+	permissions, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[models.Permission])
+
 	if err != nil {
-		logger.Error().Err(err).Msg("sql.GetPermissions")
-		return d, err
+		return nil, NewQueryError(err, "sql.map.Permissions", nil)
 	}
 
-	return accounts, nil
+	return permissions, nil
 }
 
-func (q *Queries) GetPermission(ctx context.Context, conditions ...qb.QueryCondition) (models.Permission, error) {
-	ctx, span := q.tracer.Trace(ctx, "sql.GetPermission")
-	logger := ctx.Value("logger").(*logging.ContextLogger)
-	defer span.End()
+func (q *Queries) GetPermission(ctx context.Context, conditions ...qb.QueryCondition) (*models.Permission, error) {
+	query, values := qb.NewQueryBuilder(queries.GET_PERMISSIONS_QUERY).
+		Where(conditions...).
+		Commit()
 
-	builder := qb.NewQueryBuilder("select * from permissions").Where(conditions...)
-	query, values := builder.Commit()
+	ctx = q.tracer.TraceDB(ctx, query, values)
 
-	span.SetAttributes(attribute.String("query", query))
-
-	d := models.Permission{}
 	rows, err := q.db.Query(ctx, query, values...)
 	if err != nil {
-		logger.Error().Err(err).Msg("sql.GetPermission")
-		return d, err
+		return nil, NewQueryError(err, "sql.query.GetPermission", nil)
 	}
 
 	permission, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[models.Permission])
 	if err != nil {
-		logger.Error().Err(err).Msg("sql.GetPermission")
-		return d, err
+		return nil, NewQueryError(err, "sql.map.GetPermission", nil)
 	}
 
-	return permission, nil
+	return &permission, nil
 }

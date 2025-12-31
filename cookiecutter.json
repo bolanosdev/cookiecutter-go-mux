@@ -3,7 +3,7 @@
   "service_name": "cookiecutter",
   "service_port": "8080",
   "service_description": "A brief overview of your service.",
-  "go_version": "1.23",
+  "go_version": "1.25.1",
   "docker_image": "gcr.io/distroless/base",
 
   "postgres_db": "cookiecutter_dev_db",

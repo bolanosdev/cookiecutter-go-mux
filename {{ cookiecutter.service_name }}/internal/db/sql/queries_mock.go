@@ -3,12 +3,11 @@ package sql
 import (
 	"context"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/cache"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
 
+	"github.com/bolanosdev/go-snacks/storage"
 	"github.com/jackc/pgx/v5"
-	"go.opentelemetry.io/otel"
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pashagolub/pgxmock/v4"
@@ -57,12 +56,12 @@ type PGXMocker struct {
 }
 
 func GetPGXMocks() (pgxmock.PgxConnIface, *MockPgxPoolConn, *Queries) {
+	ctx := context.Background()
 	conn, _ := pgxmock.NewConn()
 	mock := &MockPgxPoolConn{conn}
-	store := cache.NewCacheStore()
+	store := storage.NewCacheStore()
 	cfg := config.NewConfigMgr("../../").Load()
-	tp := otel.GetTracerProvider()
-	tracer := obs.NewTracer(tp, cfg)
+	tracer := obs.NewTracer(ctx, cfg.SERVICE.NAME, cfg.OBSERVABILITY)
 	querier := NewQueries(tracer, mock, store)
 
 	return conn, mock, querier

@@ -51,22 +51,26 @@ go mod tidy
 go mod vendor
 ```
 
-3.2) Create database and run initial migrations
+3.2) Create infrastructure using docker-compose
 
 ```
-make postgres -- creates databse server
-make create_db -- creates database
-make migrate_up -- run migrations from the db/migrations folder
+docker-compose up -d
+```
+
+3.3) Run initial migrations
+
+```
+task dev:migrate_up
 
 ```
 
-3.3) Run project
+3.4) Run project
+Run the project using the included launch.json or through the terminal
 
 ```
-make run OR `make build && docker-compose up
+task dev:run
 ```
 
-4.) The application and e2e test should exit successfully.
 
 ### Project Options
 
@@ -76,8 +80,7 @@ make run OR `make build && docker-compose up
 | project_description | This is a description of your project - short and sweet works here.                                          |
 | go_module           | This is the go module. This will be auto-generated from your project name and project slug.                  |
 | go_version          | This is the version of Go we want to use. Defaults to 1.15.                                                  |
-| docker_image        | This is the base docker image to use when creating the project (excluding the hostname). Defaults to buster. |
-| namespace           | The Kubernetes namespace                                                                                     |
+| docker_image        | This is the base docker image to use when creating the project (excluding the hostname). Defaults to gcr.io/distroless/base. |
 
 The app also comes with a couple of http handlers, services and sql migrations/operations examples, feel free to clean up the code as you needed.
 
@@ -87,19 +90,20 @@ Upon creating your database <a href="https://github.com/bolanosdev/cookiecutter-
 
 To learn how to create additional migrations refer to <a href="https://github.com/golang-migrate/migrate/blob/master/database/postgres/TUTORIAL.md" target="_blank">golang-migrate documentation</a>
 
-Once you have the database setup the way you wanted with your migrations, go ahead and create as many functions you want on the <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/db/sql/accounts.go#L13">sql</a> folder to perform db operations.
+Once you have the database setup the way you wanted with your migrations, go ahead and create as many functions you want on the <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/db/sql/accounts_store.go#L13">sql</a> folder to perform db operations.
 
 We decided to write our DB models/operations instead of using a sql generator such as <a href="https://github.com/sqlc-dev/sqlc">sqlc</a>, but feel free to add it if you want, that is why we follow similar folder structure.
 
+
+
 ## Logging
 
-You can use any logging library you want, we just configured a <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/cmd/middleware/logging.go" target="_blank">logging middleware</a> to write some statistics of each request http_logger: {timestamp, uri, status_code, request, trace_id, duration}.
+You can use any logging library you want, we added a custom logging middleware, <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/service/middleware/logger.go" target="_blank">logging middleware</a> to write some basic statistics of each request http_logger: {timestamp, uri, status_code, request, trace_id, duration}, and a <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/service/handlers/handlers.go">Error Handler</a> to catch/log and report errors to sentry.
 
 Notes:
 
-- The trace_id should match the parent jaeger trace_id
+- The every log should also include a jaeger trace_id and sentry event_id.
 - If you want to exclude routes you can add them to the app.yaml observability ignored_paths list.
-- If you want the request body to not be included on the request you can add it to the app.yaml observability.sensitive_paths list. (do this if you do not want your logs to include sensitive information)
 
 <p>
   Example: <br/>
@@ -107,28 +111,18 @@ Notes:
 
 ## Telemetry
 
+### Tracing
+we added a Jaeger middleware to register http events and custom methods to register child events for business logic (services) and database operations (stores), additionally. jaeger is configured to persist the trace_id through downstream services.
+
 ### Prometheus
 
-The project comes with a /metrics endpoint supported thanks to <a href="https://github.com/labbsr0x/mux-monitor" target="blank">Mux Monitor</a>
+The project comes with a custom /metrics endpoint supported thanks to <a href="https://github.com/bolanosdev/prometheus-mux-monitor" target="blank">Prometheus Mux Monitor</a>
 
-### Jaeger
 
-The project comes with telemetry enabled for internal use and across multiple services.
-As long as you set the observability.jaeger.dial_hostname to a running instance of jaeger.
-
-1. Registering http events.
-   See app_router.go router how I'm using middleware.Tracing to attach otelhttp to http.Handler.
-2. Registering child events using parent traces.
-   See how I'm using utils.TraceWithContext on <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/internal/services/accounts.go#L22C1-L23C1" target="_blank" />internal/services/accounts</a> or <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/db/sql/accounts.go#L13" target="_blank">db/sql/accounts</a>, to append new child traces.
-   <img src="public/upstream_jaeger.png" alt="upstream jaeger traces" />
-3. Registering upstream events.
-   You can create 2 apps using the template and call app B from app B in the <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/internal/api/data.go#L27" target="_blank">internal/api/data.go handler</a>
-   you will see in jaeger how the child app is already picking up the parent_trace from the event context propagator.
-   <img src="public/local_jaeger.png" alt="local jaeger traces" />
 
 ### Authorization
 
-The template comes with a basic data authorization based on paseto tokens, see how you can create/retrieve tokens on the <a hred="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/internal/api/auth.go#L28" target="_blank">/login /signup endpoints on the internal/api/auth.go</a>
+The template comes with a basic route authorization based on paseto tokens, see how you can create/retrieve tokens on the <a hred="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/service/middleware/authorization.go" target="_blank">/login /signup endpoints on the internal/api/auth.go</a>
 
 And how you can restrict access to http.Handler(s) using the middleware.Authorization look at the <a href="https://github.com/bolanosdev/cookiecutter-go-mux/blob/main/%7B%7B%20cookiecutter.service_name%20%7D%7D/cmd/app.router.go#L32" target="_blank">/restricted endpoint in cmd/app_router.go</a>
 
