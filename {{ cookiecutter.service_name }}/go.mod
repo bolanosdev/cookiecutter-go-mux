@@ -3,8 +3,8 @@ module {{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}
 go 1.25.1
 
 require (
-	github.com/bolanosdev/go-snacks v1.0.5
-	github.com/bolanosdev/prometheus-mux-monitor v1.0.0
+	github.com/bolanosdev/go-snacks v1.0.7
+	github.com/bolanosdev/prometheus-mux-monitor v0.2.1
 	github.com/bolanosdev/query-builder v0.1.2
 	github.com/gorilla/mux v1.8.1
 	github.com/jackc/pgx/v5 v5.7.6

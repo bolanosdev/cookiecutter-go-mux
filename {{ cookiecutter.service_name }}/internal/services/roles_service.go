@@ -6,8 +6,8 @@ import (
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/models"
 	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/db/sql"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
 
+	"github.com/bolanosdev/go-snacks/observability/jaeger"
 	"github.com/bolanosdev/go-snacks/storage"
 	qb "github.com/bolanosdev/query-builder"
 	"github.com/pkg/errors"
@@ -17,13 +17,13 @@ type RoleService struct {
 	db     sql.PgxPoolConn
 	store  db.Store
 	cache  *storage.InMemoryCacheStore
-	tracer obs.TracerInterface
+	tracer jaeger.JaegerInterface
 }
 
 func NewRoleService(
 	db sql.PgxPoolConn,
 	store db.Store,
-	tracer obs.TracerInterface,
+	tracer jaeger.JaegerInterface,
 	cache *storage.InMemoryCacheStore,
 ) RoleService {
 	return RoleService{

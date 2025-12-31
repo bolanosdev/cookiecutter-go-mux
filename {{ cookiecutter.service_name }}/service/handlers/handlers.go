@@ -6,8 +6,9 @@ import (
 
 	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/kerr"
 	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/encoder"
-	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/internal/utils/obs"
 	"{{cookiecutter.group_name}}/{{cookiecutter.service_name}}/service/entities/output"
+
+	"github.com/bolanosdev/go-snacks/observability/sentry"
 )
 
 type errorInfoSetter interface {
@@ -15,7 +16,7 @@ type errorInfoSetter interface {
 }
 
 type BaseHandler struct {
-	sentry *obs.SentryObs
+	sentry *sentry.SentryObs
 }
 
 func NewBaseHandler() BaseHandler {

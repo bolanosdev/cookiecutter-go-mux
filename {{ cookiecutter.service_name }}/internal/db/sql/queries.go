@@ -3,8 +3,7 @@ package sql
 import (
 	"context"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
-
+	"github.com/bolanosdev/go-snacks/observability/jaeger"
 	"github.com/bolanosdev/go-snacks/storage"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,13 +18,13 @@ type PgxPoolConn interface {
 }
 
 type Queries struct {
-	tracer obs.TracerInterface
+	tracer jaeger.JaegerInterface
 	db     PgxPoolConn
 	cache  *storage.InMemoryCacheStore
 }
 
 func NewQueries(
-	tracer obs.TracerInterface,
+	tracer jaeger.JaegerInterface,
 	conn PgxPoolConn,
 	cache *storage.InMemoryCacheStore,
 ) *Queries {

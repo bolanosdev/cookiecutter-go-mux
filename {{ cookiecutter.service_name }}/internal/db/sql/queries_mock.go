@@ -3,9 +3,7 @@ package sql
 import (
 	"context"
 
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/config"
-	"{{ cookiecutter.group_name }}/{{ cookiecutter.service_name }}/internal/utils/obs"
-
+	"github.com/bolanosdev/go-snacks/observability/jaeger"
 	"github.com/bolanosdev/go-snacks/storage"
 	"github.com/jackc/pgx/v5"
 
@@ -56,12 +54,10 @@ type PGXMocker struct {
 }
 
 func GetPGXMocks() (pgxmock.PgxConnIface, *MockPgxPoolConn, *Queries) {
-	ctx := context.Background()
 	conn, _ := pgxmock.NewConn()
 	mock := &MockPgxPoolConn{conn}
 	store := storage.NewCacheStore()
-	cfg := config.NewConfigMgr("../../").Load()
-	tracer := obs.NewTracer(ctx, cfg.SERVICE.NAME, cfg.OBSERVABILITY)
+	tracer := jaeger.NewMockTracer()
 	querier := NewQueries(tracer, mock, store)
 
 	return conn, mock, querier
